@@ -5,7 +5,7 @@
 專案名稱：math-games
 專案用途：建立一個數學遊戲總專案，收納各式各樣跟數學有關的遊戲。各個遊戲作為此專案底下的分支、子資料夾或後續模組管理。
 主要工作目錄：G:\我的雲端硬碟\math-games
-GitHub repo：https://github.com/mathruffian-dot/math-games
+GitHub repo：https://github.com/tcc616/math-games
 預設 branch：main
 
 ## Obsidian 對應筆記
@@ -19,7 +19,7 @@ Obsidian vault：C:\Users\張達偉\Documents\Obsidian 使用指南
 ## 工作桌 + 三個家
 
 - 工作桌：G:\我的雲端硬碟\math-games
-- GitHub：https://github.com/mathruffian-dot/math-games
+- GitHub：https://github.com/tcc616/math-games
 - Obsidian：C:\Users\張達偉\Documents\Obsidian 使用指南 + math-games/專案工作流程.md
 - Firebase：未使用；等第一個需要資料庫的遊戲再設定
 
