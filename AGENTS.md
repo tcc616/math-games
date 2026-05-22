@@ -1,9 +1,9 @@
-# math-games - AGENTS.md
+# math-games — AGENTS.md
 
 ## 專案入口
 
 專案名稱：math-games
-專案用途：建立一個數學遊戲總專案，收納各式各樣跟數學有關的遊戲。各個遊戲作為此專案底下的分支、子資料夾或後續模組管理。
+專案用途：建立一個數學遊戲總專案，專門收納各式各樣跟數學有關的遊戲。各個遊戲為附屬此專案的分支、子資料夾或後續模組。
 主要工作目錄：G:\我的雲端硬碟\math-games
 GitHub repo：https://github.com/tcc616/math-games
 預設 branch：main
