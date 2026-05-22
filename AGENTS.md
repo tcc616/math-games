@@ -50,7 +50,7 @@ Obsidian vault：C:\Users\張達偉\Documents\Obsidian 使用指南
 
 ## 主要檔案
 
-入口檔：尚未建立
+入口檔：games/九九乘法遊戲/index.html
 設定檔：尚未建立
 部署位置：GitHub Pages，尚未啟用
 

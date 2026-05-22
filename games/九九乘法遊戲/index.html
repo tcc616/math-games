@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>九九乘法遊戲</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1d2433;
+      --muted: #667085;
+      --line: #d9dee8;
+      --panel: #ffffff;
+      --bg: #f4f7fb;
+      --blue: #2563eb;
+      --green: #16803c;
+      --red: #d92d20;
+      --amber: #b54708;
+      --shadow: 0 16px 44px rgba(31, 42, 68, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Microsoft JhengHei", "Noto Sans TC", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.10), transparent 36%),
+        linear-gradient(315deg, rgba(22, 128, 60, 0.10), transparent 38%),
+        var(--bg);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 4.25rem);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .score-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(92px, 1fr));
+      gap: 10px;
+      min-width: min(520px, 100%);
+    }
+
+    .metric {
+      background: rgba(255, 255, 255, 0.84);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 1.45rem;
+      line-height: 1.1;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .game-board,
+    .side-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .game-board {
+      min-height: 560px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      overflow: hidden;
+    }
+
+    .question-area {
+      display: grid;
+      place-items: center;
+      padding: 42px 26px 28px;
+      text-align: center;
+    }
+
+    .question-label {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .question {
+      margin: 0;
+      font-size: clamp(4rem, 15vw, 9rem);
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .answer-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      width: min(520px, 100%);
+      margin: 28px auto 0;
+    }
+
+    .answer-input {
+      width: 100%;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      padding: 15px 16px;
+      font-size: 1.5rem;
+      text-align: center;
+      outline: none;
+    }
+
+    .answer-input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .primary,
+    .secondary {
+      border: 0;
+      border-radius: 8px;
+      padding: 0 18px;
+      min-height: 58px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .primary {
+      background: var(--blue);
+      color: white;
+    }
+
+    .secondary {
+      background: #eef2f7;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    .primary:hover,
+    .secondary:hover {
+      filter: brightness(0.97);
+    }
+
+    .feedback {
+      min-height: 36px;
+      margin-top: 18px;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .feedback.correct {
+      color: var(--green);
+    }
+
+    .feedback.wrong {
+      color: var(--red);
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      padding: 0 22px 24px;
+    }
+
+    .choice {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      min-height: 58px;
+      cursor: pointer;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .choice:hover {
+      border-color: var(--blue);
+      background: #eff6ff;
+    }
+
+    .progress {
+      height: 10px;
+      background: #e9edf5;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, var(--green), var(--blue));
+      transition: width 0.2s linear;
+    }
+
+    .side-panel {
+      padding: 18px;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 1rem;
+    }
+
+    .control-group {
+      margin-bottom: 18px;
+    }
+
+    .control-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .select,
+    .number-input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: var(--ink);
+      padding: 12px;
+      outline: none;
+    }
+
+    .table-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .table-toggle {
+      position: relative;
+    }
+
+    .table-toggle input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .table-toggle span {
+      display: grid;
+      place-items: center;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .table-toggle input:checked + span {
+      color: white;
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .history {
+      display: grid;
+      gap: 8px;
+      max-height: 190px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: #fbfcff;
+      font-size: 0.9rem;
+    }
+
+    .history-item.good {
+      border-color: rgba(22, 128, 60, 0.28);
+    }
+
+    .history-item.miss {
+      border-color: rgba(217, 45, 32, 0.28);
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 880px) {
+      header {
+        display: block;
+      }
+
+      .score-strip {
+        margin-top: 18px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        width: min(100% - 20px, 1080px);
+        padding: 16px 0;
+      }
+
+      .game-board {
+        min-height: 500px;
+      }
+
+      .question-area {
+        padding: 30px 14px 20px;
+      }
+
+      .answer-row {
+        grid-template-columns: 1fr;
+      }
+
+      .choices {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 14px 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>九九乘法遊戲</h1>
+        <p class="subtitle">選擇要練習的乘法表，在時間內連續答題。</p>
+      </div>
+      <section class="score-strip" aria-label="遊戲分數">
+        <div class="metric">
+          <span>分數</span>
+          <strong id="score">0</strong>
+        </div>
+        <div class="metric">
+          <span>連續答對</span>
+          <strong id="streak">0</strong>
+        </div>
+        <div class="metric">
+          <span>正確率</span>
+          <strong id="accuracy">0%</strong>
+        </div>
+        <div class="metric">
+          <span>剩餘時間</span>
+          <strong id="time">60</strong>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <section class="game-board" aria-label="答題區">
+        <div class="progress" aria-hidden="true">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="question-area">
+          <div>
+            <p class="question-label" id="roundLabel">按開始後出題</p>
+            <p class="question" id="question">Ready</p>
+            <form class="answer-row" id="answerForm">
+              <input class="answer-input" id="answerInput" inputmode="numeric" autocomplete="off" placeholder="輸入答案" aria-label="輸入答案">
+              <button class="primary" type="submit">作答</button>
+            </form>
+            <div class="feedback" id="feedback" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="choices" id="choices" aria-label="快速選項"></div>
+      </section>
+
+      <aside class="side-panel" aria-label="遊戲設定">
+        <div class="control-group">
+          <h2 class="section-title">設定</h2>
+          <label for="duration">每局秒數</label>
+          <input class="number-input" id="duration" type="number" min="20" max="180" step="10" value="60">
+        </div>
+
+        <div class="control-group">
+          <label for="mode">題目模式</label>
+          <select class="select" id="mode">
+            <option value="mixed">混合出題</option>
+            <option value="fixed-left">固定左邊乘數</option>
+            <option value="fixed-right">固定右邊乘數</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label>練習乘法表</label>
+          <div class="table-grid" id="tableGrid"></div>
+        </div>
+
+        <div class="control-group button-row">
+          <button class="primary" id="startButton" type="button">開始</button>
+          <button class="secondary" id="resetButton" type="button">重設</button>
+        </div>
+
+        <div class="control-group">
+          <h2 class="section-title">最近答題</h2>
+          <div class="history" id="history">
+            <div class="empty">開始後會顯示最近答過的題目。</div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      running: false,
+      score: 0,
+      streak: 0,
+      correct: 0,
+      total: 0,
+      timeLeft: 60,
+      duration: 60,
+      current: null,
+      timer: null,
+      history: []
+    };
+
+    const els = {
+      score: document.querySelector("#score"),
+      streak: document.querySelector("#streak"),
+      accuracy: document.querySelector("#accuracy"),
+      time: document.querySelector("#time"),
+      progressBar: document.querySelector("#progressBar"),
+      roundLabel: document.querySelector("#roundLabel"),
+      question: document.querySelector("#question"),
+      answerForm: document.querySelector("#answerForm"),
+      answerInput: document.querySelector("#answerInput"),
+      feedback: document.querySelector("#feedback"),
+      choices: document.querySelector("#choices"),
+      duration: document.querySelector("#duration"),
+      mode: document.querySelector("#mode"),
+      tableGrid: document.querySelector("#tableGrid"),
+      startButton: document.querySelector("#startButton"),
+      resetButton: document.querySelector("#resetButton"),
+      history: document.querySelector("#history")
+    };
+
+    function createTableToggles() {
+      for (let number = 1; number <= 9; number += 1) {
+        const label = document.createElement("label");
+        label.className = "table-toggle";
+        label.innerHTML = `
+          <input type="checkbox" value="${number}" checked>
+          <span>${number}</span>
+        `;
+        els.tableGrid.appendChild(label);
+      }
+    }
+
+    function selectedTables() {
+      const checked = [...els.tableGrid.querySelectorAll("input:checked")];
+      if (checked.length === 0) {
+        return [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      }
+      return checked.map((input) => Number(input.value));
+    }
+
+    function randomFrom(items) {
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function makeQuestion() {
+      const tables = selectedTables();
+      const mode = els.mode.value;
+      let left;
+      let right;
+
+      if (mode === "fixed-left") {
+        left = randomFrom(tables);
+        right = randomFrom([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+      } else if (mode === "fixed-right") {
+        left = randomFrom([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        right = randomFrom(tables);
+      } else {
+        left = randomFrom(tables);
+        right = randomFrom(tables);
+      }
+
+      state.current = {
+        left,
+        right,
+        answer: left * right
+      };
+
+      els.question.textContent = `${left} x ${right}`;
+      els.roundLabel.textContent = `第 ${state.total + 1} 題`;
+      els.answerInput.value = "";
+      els.answerInput.focus();
+      renderChoices();
+    }
+
+    function renderChoices() {
+      const answer = state.current.answer;
+      const options = new Set([answer]);
+      while (options.size < 4) {
+        const offset = Math.floor(Math.random() * 17) - 8;
+        const candidate = Math.max(1, answer + offset);
+        options.add(candidate);
+      }
+
+      els.choices.innerHTML = "";
+      [...options]
+        .sort(() => Math.random() - 0.5)
+        .forEach((value) => {
+          const button = document.createElement("button");
+          button.className = "choice";
+          button.type = "button";
+          button.textContent = value;
+          button.addEventListener("click", () => submitAnswer(value));
+          els.choices.appendChild(button);
+        });
+    }
+
+    function startGame() {
+      state.running = true;
+      state.score = 0;
+      state.streak = 0;
+      state.correct = 0;
+      state.total = 0;
+      state.history = [];
+      state.duration = clamp(Number(els.duration.value) || 60, 20, 180);
+      state.timeLeft = state.duration;
+      els.duration.value = state.duration;
+      els.startButton.textContent = "重新開始";
+      els.feedback.textContent = "";
+      els.feedback.className = "feedback";
+      renderStats();
+      renderHistory();
+      makeQuestion();
+      clearInterval(state.timer);
+      state.timer = setInterval(tick, 1000);
+    }
+
+    function resetGame() {
+      clearInterval(state.timer);
+      state.running = false;
+      state.score = 0;
+      state.streak = 0;
+      state.correct = 0;
+      state.total = 0;
+      state.history = [];
+      state.current = null;
+      state.duration = clamp(Number(els.duration.value) || 60, 20, 180);
+      state.timeLeft = state.duration;
+      els.startButton.textContent = "開始";
+      els.roundLabel.textContent = "按開始後出題";
+      els.question.textContent = "Ready";
+      els.answerInput.value = "";
+      els.feedback.textContent = "";
+      els.feedback.className = "feedback";
+      els.choices.innerHTML = "";
+      renderStats();
+      renderHistory();
+    }
+
+    function tick() {
+      state.timeLeft -= 1;
+      if (state.timeLeft <= 0) {
+        endGame();
+      }
+      renderStats();
+    }
+
+    function endGame() {
+      clearInterval(state.timer);
+      state.running = false;
+      state.timeLeft = 0;
+      els.roundLabel.textContent = "時間到";
+      els.question.textContent = `${state.score} 分`;
+      els.feedback.textContent = `答對 ${state.correct} / ${state.total} 題`;
+      els.feedback.className = "feedback correct";
+      els.startButton.textContent = "再玩一次";
+      els.choices.innerHTML = "";
+      renderStats();
+    }
+
+    function submitAnswer(value) {
+      if (!state.running || !state.current) {
+        startGame();
+        return;
+      }
+
+      const numeric = Number(value);
+      if (!Number.isInteger(numeric)) {
+        els.feedback.textContent = "請輸入整數答案";
+        els.feedback.className = "feedback wrong";
+        return;
+      }
+
+      const correct = numeric === state.current.answer;
+      state.total += 1;
+
+      if (correct) {
+        state.correct += 1;
+        state.streak += 1;
+        state.score += 10 + Math.min(state.streak - 1, 5) * 2;
+        els.feedback.textContent = `答對了，連續 ${state.streak} 題`;
+        els.feedback.className = "feedback correct";
+      } else {
+        state.streak = 0;
+        els.feedback.textContent = `答案是 ${state.current.answer}`;
+        els.feedback.className = "feedback wrong";
+      }
+
+      state.history.unshift({
+        text: `${state.current.left} x ${state.current.right} = ${state.current.answer}`,
+        given: numeric,
+        correct
+      });
+      state.history = state.history.slice(0, 8);
+      renderStats();
+      renderHistory();
+      makeQuestion();
+    }
+
+    function renderStats() {
+      const accuracy = state.total === 0 ? 0 : Math.round((state.correct / state.total) * 100);
+      const progress = state.duration === 0 ? 0 : (state.timeLeft / state.duration) * 100;
+      els.score.textContent = state.score;
+      els.streak.textContent = state.streak;
+      els.accuracy.textContent = `${accuracy}%`;
+      els.time.textContent = state.timeLeft;
+      els.progressBar.style.width = `${Math.max(0, progress)}%`;
+    }
+
+    function renderHistory() {
+      if (state.history.length === 0) {
+        els.history.innerHTML = '<div class="empty">開始後會顯示最近答過的題目。</div>';
+        return;
+      }
+
+      els.history.innerHTML = "";
+      state.history.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = `history-item ${item.correct ? "good" : "miss"}`;
+        row.innerHTML = `
+          <span>${item.text}</span>
+          <strong>${item.correct ? "答對" : `答 ${item.given}`}</strong>
+        `;
+        els.history.appendChild(row);
+      });
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    els.answerForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      submitAnswer(els.answerInput.value.trim());
+    });
+    els.startButton.addEventListener("click", startGame);
+    els.resetButton.addEventListener("click", resetGame);
+
+    createTableToggles();
+    resetGame();
+  </script>
+</body>
+</html>
